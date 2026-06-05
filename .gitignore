@@ -1,0 +1,13 @@
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Python
+src-python/venv/
+src-python/__pycache__/
+src-python/models/
+uploads/
+docmind_local.db
+.env
+.DS_Store
