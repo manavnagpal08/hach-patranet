@@ -7,7 +7,9 @@ dist-ssr/
 src-python/venv/
 src-python/__pycache__/
 src-python/models/
+models/
 uploads/
 docmind_local.db
+patranet.db
 .env
 .DS_Store

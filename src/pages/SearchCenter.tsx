@@ -6,21 +6,26 @@ import { useNavigate } from 'react-router-dom';
 
 export const SearchCenter: React.FC = () => {
   const [query, setQuery] = useState('');
-  const [documents, setDocuments] = useState<Document[]>([]);
+  const [documents, setDocuments] = useState<(Document & { snippet?: string })[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    api.getDocuments().then(data => {
-      setDocuments(data);
+    const fetchDocs = async () => {
+      setLoading(true);
+      if (query.trim() === '') {
+        const data = await api.getDocuments();
+        setDocuments(data);
+      } else {
+        const data = await api.searchDocuments(query);
+        setDocuments(data);
+      }
       setLoading(false);
-    });
-  }, []);
+    };
 
-  const filteredDocs = documents.filter(doc => 
-    doc.filename.toLowerCase().includes(query.toLowerCase()) || 
-    (doc.document_type && doc.document_type.toLowerCase().includes(query.toLowerCase()))
-  );
+    const debounceTimer = setTimeout(fetchDocs, 300);
+    return () => clearTimeout(debounceTimer);
+  }, [query]);
 
   return (
     <div className="max-w-4xl mx-auto pb-10">
@@ -43,34 +48,37 @@ export const SearchCenter: React.FC = () => {
       </div>
 
       <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-100 bg-slate-50">
+        <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
           <h2 className="text-sm font-semibold text-slate-700">
-            {query.trim() === '' ? 'All Documents' : `Search Results (${filteredDocs.length})`}
+            {query.trim() === '' ? 'All Documents' : `Search Results (${documents.length})`}
           </h2>
         </div>
         <div className="divide-y divide-slate-100 max-h-[60vh] overflow-y-auto">
           {loading ? (
-            <div className="p-12 text-center text-slate-500">Loading documents...</div>
-          ) : filteredDocs.length > 0 ? (
-            filteredDocs.map((doc, index) => (
+            <div className="p-12 text-center flex flex-col items-center justify-center text-slate-500">
+              <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4" />
+              Searching database...
+            </div>
+          ) : documents.length > 0 ? (
+            documents.map((doc, index) => (
               <motion.div
                 key={doc.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
                 onClick={() => navigate(`/results?id=${doc.id}`)}
-                className="p-4 flex items-center justify-between hover:bg-slate-50 cursor-pointer group transition-colors"
+                className="p-5 flex items-start justify-between hover:bg-slate-50 cursor-pointer group transition-colors"
               >
-                <div className="flex items-center gap-4">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                <div className="flex items-start gap-4 flex-1">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
                     doc.status === 'Completed' ? 'bg-emerald-50 text-emerald-600' :
                     doc.status === 'Error' ? 'bg-rose-50 text-rose-600' : 'bg-indigo-50 text-indigo-600'
                   }`}>
                     <FileText className="w-5 h-5" />
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <h3 className="text-sm font-semibold text-slate-800 group-hover:text-indigo-600 transition-colors">{doc.filename}</h3>
-                    <div className="flex items-center gap-3 mt-1 text-xs text-slate-500">
+                    <div className="flex items-center gap-3 mt-1.5 text-xs text-slate-500">
                       <span className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />
                         {new Date(doc.created_at).toLocaleDateString()}
@@ -81,9 +89,14 @@ export const SearchCenter: React.FC = () => {
                         </span>
                       )}
                     </div>
+                    {doc.snippet && (
+                      <div className="mt-3 text-sm text-slate-600 bg-indigo-50/50 p-3 rounded-lg border border-indigo-100/50 italic">
+                        "{doc.snippet}"
+                      </div>
+                    )}
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 ml-4">
                   {doc.status === 'Completed' ? (
                     <span className="flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
                       <CheckCircle2 className="w-3 h-3" /> Completed

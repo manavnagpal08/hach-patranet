@@ -1,8 +1,30 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Settings as SettingsIcon, Cpu, HardDrive, Bell, Globe, Database } from 'lucide-react';
+import { Settings as SettingsIcon, Cpu, HardDrive, Database, Key } from 'lucide-react';
 
 export const Settings: React.FC = () => {
+  const [geminiKey, setGeminiKey] = useState('');
+  const [groqKey, setGroqKey] = useState('');
+  const [activeEngine, setActiveEngine] = useState('local');
+
+  useEffect(() => {
+    const savedGemini = localStorage.getItem('gemini_api_key');
+    if (savedGemini) setGeminiKey(savedGemini);
+    
+    const savedGroq = localStorage.getItem('groq_api_key');
+    if (savedGroq) setGroqKey(savedGroq);
+    
+    const savedEngine = localStorage.getItem('active_engine');
+    if (savedEngine) setActiveEngine(savedEngine);
+  }, []);
+
+  const handleSave = () => {
+    localStorage.setItem('gemini_api_key', geminiKey);
+    localStorage.setItem('groq_api_key', groqKey);
+    localStorage.setItem('active_engine', activeEngine);
+    // Visual feedback could be added here
+  };
+
   return (
     <div className="max-w-4xl mx-auto pb-10">
       <div className="mb-8">
@@ -35,44 +57,74 @@ export const Settings: React.FC = () => {
             className="bg-white rounded-3xl border border-slate-200 shadow-sm p-8"
           >
             <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-              <Cpu className="w-5 h-5 text-blue-500" /> Local LLM Configuration
+              <Cpu className="w-5 h-5 text-blue-500" /> AI Engine Configuration
             </h2>
             
-            <div className="space-y-6">
+            <div className="space-y-8">
+              
+              {/* Engine Toggle */}
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Active Model</label>
-                <select className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
-                  <option>Llama 3.2 1B (Q4_K_M) - Recommended</option>
-                  <option>Llama 3.2 3B (Q4_K_M)</option>
-                  <option>Phi-3 Mini 4K (Q4_K_M)</option>
-                </select>
-                <p className="text-xs text-slate-500 mt-2">Model is loaded on-demand to preserve your 8GB RAM limit.</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Context Window</label>
-                <input type="range" className="w-full accent-blue-600" min="512" max="4096" defaultValue="2048" />
-                <div className="flex justify-between text-xs font-medium text-slate-400 mt-2">
-                  <span>512</span>
-                  <span>2048 (Current)</span>
-                  <span>4096</span>
+                <label className="block text-sm font-semibold text-slate-700 mb-3">Active Processing Engine</label>
+                <div className="flex bg-slate-100 p-1 rounded-xl">
+                  <button 
+                    onClick={() => setActiveEngine('local')}
+                    className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${activeEngine === 'local' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                  >
+                    Local Llama
+                  </button>
+                  <button 
+                    onClick={() => setActiveEngine('groq')}
+                    className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${activeEngine === 'groq' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                  >
+                    Groq Cloud
+                  </button>
+                  <button 
+                    onClick={() => setActiveEngine('gemini')}
+                    className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${activeEngine === 'gemini' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                  >
+                    Gemini API
+                  </button>
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-slate-800">Dynamic Memory Unloading</p>
-                  <p className="text-sm text-slate-500">Automatically unloads LLM when idle for 5 mins</p>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Groq API Key</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Key className="h-5 w-5 text-slate-400" />
+                  </div>
+                  <input
+                    type="password"
+                    value={groqKey}
+                    onChange={(e) => setGroqKey(e.target.value)}
+                    placeholder="gsk_..."
+                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  />
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" className="sr-only peer" defaultChecked />
-                  <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                </label>
+                <p className="text-xs text-slate-500 mt-2">Required for Groq Cloud. Get it for free at console.groq.com</p>
               </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Gemini API Key</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Key className="h-5 w-5 text-slate-400" />
+                  </div>
+                  <input
+                    type="password"
+                    value={geminiKey}
+                    onChange={(e) => setGeminiKey(e.target.value)}
+                    placeholder="AIza..."
+                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  />
+                </div>
+                <p className="text-xs text-slate-500 mt-2">Required for Gemini API processing.</p>
+              </div>
+
             </div>
             
             <div className="mt-8 pt-6 border-t border-slate-100 flex justify-end">
-              <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2.5 rounded-xl shadow-lg shadow-blue-200 transition-colors">
+              <button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2.5 rounded-xl shadow-lg shadow-blue-200 transition-colors">
                 Save Configuration
               </button>
             </div>

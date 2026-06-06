@@ -1,16 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { MainLayout } from './layouts/MainLayout';
 import { Splash } from './pages/Splash';
 import { Dashboard } from './pages/Dashboard';
-
+import { AnalyticsCenter } from './pages/AnalyticsCenter';
 import { UploadCenter } from './pages/UploadCenter';
-
 import { ProcessingCenter } from './pages/ProcessingCenter';
-
 import { ResultsCenter } from './pages/ResultsCenter';
-
 import { SearchCenter } from './pages/SearchCenter';
 import { Settings } from './pages/Settings';
 import { History } from './pages/History';
@@ -49,6 +46,7 @@ function App() {
         <Route element={<MainLayout />}>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/analytics" element={<AnalyticsCenter />} />
           <Route path="/upload" element={<UploadCenter />} />
           <Route path="/processing" element={<ProcessingCenter />} />
           <Route path="/results" element={<ResultsCenter />} />

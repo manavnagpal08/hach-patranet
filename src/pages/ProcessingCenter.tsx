@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle2, Loader2, Search, Cpu, FileJson, AlertCircle } from 'lucide-react';
+import { CheckCircle2, Loader2, Search, AlertCircle } from 'lucide-react';
 import { api, type Document } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 
@@ -64,11 +64,24 @@ export const ProcessingCenter: React.FC = () => {
     return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
+  const activeEngine = localStorage.getItem('active_engine') || 'local';
+
   return (
     <div className="max-w-4xl mx-auto pb-10">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Processing Pipeline</h1>
-        <p className="text-slate-500 mt-1">Live view of the local document processing engine.</p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800 tracking-tight flex items-center gap-3">
+            Processing Pipeline
+            <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
+              activeEngine === 'gemini' ? 'bg-purple-100 text-purple-700' :
+              activeEngine === 'groq' ? 'bg-orange-100 text-orange-700' :
+              'bg-blue-100 text-blue-700'
+            }`}>
+              Engine: {activeEngine.toUpperCase()}
+            </span>
+          </h1>
+          <p className="text-slate-500 mt-1">Live view of the document processing engine.</p>
+        </div>
       </div>
 
       <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden p-8">
@@ -101,32 +114,69 @@ export const ProcessingCenter: React.FC = () => {
                 <CheckCircle2 className="w-5 h-5" />
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-slate-800">Document Uploaded</h3>
-                <p className="text-sm text-green-600 flex items-center gap-1.5 mt-0.5 font-medium">Successfully received</p>
+                <h3 className="text-lg font-semibold text-slate-800">1. Document Received</h3>
+                <p className="text-sm text-green-600 flex items-center gap-1.5 mt-0.5 font-medium">Successfully uploaded securely</p>
               </div>
             </motion.div>
 
-            {/* Step 2: Engine Processing */}
-            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }} className={`relative flex items-center gap-6 ${isPending ? 'opacity-40' : 'opacity-100'}`}>
+            {/* Step 2: OCR Pipeline */}
+            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className={`relative flex items-center gap-6 ${isPending ? 'opacity-40' : 'opacity-100'}`}>
               <div className={`relative z-10 w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${
-                isCompleted ? 'bg-green-500 text-white' : 
-                isError ? 'bg-red-500 text-white' :
-                isProcessing ? 'bg-indigo-600 text-white shadow-indigo-200' : 'bg-white border-2 border-slate-200 text-slate-400'
+                isCompleted || doc.status.includes('Llama') || doc.status.includes('Analyzing') || doc.status.includes('Cloud') ? 'bg-green-500 text-white' : 
+                isError && doc.status.includes('OCR') ? 'bg-red-500 text-white' :
+                doc.status.includes('OCR') ? 'bg-indigo-600 text-white shadow-indigo-200' : 'bg-white border-2 border-slate-200 text-slate-400'
               }`}>
-                {isCompleted ? <CheckCircle2 className="w-5 h-5" /> : isError ? <AlertCircle className="w-5 h-5" /> : <Search className="w-5 h-5" />}
+                {isCompleted || doc.status.includes('Llama') || doc.status.includes('Analyzing') || doc.status.includes('Cloud') ? <CheckCircle2 className="w-5 h-5" /> : (isError && doc.status.includes('OCR')) ? <AlertCircle className="w-5 h-5" /> : <Search className="w-5 h-5" />}
               </div>
               <div className="flex-1">
-                <h3 className={`text-lg font-semibold ${isPending ? 'text-slate-500' : 'text-slate-800'}`}>Engine Inference Pipeline</h3>
-                {isProcessing && (
+                <h3 className={`text-lg font-semibold ${isPending ? 'text-slate-500' : 'text-slate-800'}`}>2. Vision & OCR Processing</h3>
+                {doc.status.includes('OCR') && !isError && (
+                   <div className="text-sm text-indigo-600 flex items-center gap-1.5 mt-0.5 font-medium">
+                     <Loader2 className="w-4 h-4 animate-spin" /> {doc.status}
+                   </div>
+                )}
+                {(isCompleted || doc.status.includes('Llama') || doc.status.includes('Analyzing') || doc.status.includes('Cloud')) && (
+                  <p className="text-sm text-green-600 flex items-center gap-1.5 mt-0.5 font-medium">Text successfully extracted</p>
+                )}
+              </div>
+            </motion.div>
+
+            {/* Step 3: LLM Structuring */}
+            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }} className={`relative flex items-center gap-6 ${!isCompleted && !doc.status.includes('Llama') && !doc.status.includes('Analyzing') && !doc.status.includes('Cloud') && !isError ? 'opacity-40' : 'opacity-100'}`}>
+              <div className={`relative z-10 w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${
+                isCompleted ? 'bg-green-500 text-white' : 
+                isError && !doc.status.includes('OCR') ? 'bg-red-500 text-white' :
+                (doc.status.includes('Llama') || doc.status.includes('Analyzing') || doc.status.includes('Cloud')) ? 'bg-indigo-600 text-white shadow-indigo-200' : 'bg-white border-2 border-slate-200 text-slate-400'
+              }`}>
+                {isCompleted ? <CheckCircle2 className="w-5 h-5" /> : (isError && !doc.status.includes('OCR')) ? <AlertCircle className="w-5 h-5" /> : <Search className="w-5 h-5" />}
+              </div>
+              <div className="flex-1">
+                <h3 className={`text-lg font-semibold ${!isCompleted && !doc.status.includes('Llama') && !doc.status.includes('Analyzing') && !doc.status.includes('Cloud') && !isError ? 'text-slate-500' : 'text-slate-800'}`}>3. AI Semantic Structuring</h3>
+                {(doc.status.includes('Llama') || doc.status.includes('Analyzing') || doc.status.includes('Cloud')) && !isCompleted && !isError && (
                    <div className="text-sm text-indigo-600 flex items-center gap-1.5 mt-0.5 font-medium">
                      <Loader2 className="w-4 h-4 animate-spin" /> {doc.status}
                    </div>
                 )}
                 {isCompleted && (
-                  <p className="text-sm text-green-600 flex items-center gap-1.5 mt-0.5 font-medium">Finished extracting structure</p>
+                  <p className="text-sm text-green-600 flex items-center gap-1.5 mt-0.5 font-medium">Data successfully structured</p>
                 )}
                 {isError && (
                   <p className="text-sm text-red-600 flex items-center gap-1.5 mt-0.5 font-medium">{doc.status}</p>
+                )}
+              </div>
+            </motion.div>
+
+            {/* Step 4: Finalization */}
+            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }} className={`relative flex items-center gap-6 ${!isCompleted ? 'opacity-40' : 'opacity-100'}`}>
+              <div className={`relative z-10 w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${
+                isCompleted ? 'bg-green-500 text-white' : 'bg-white border-2 border-slate-200 text-slate-400'
+              }`}>
+                {isCompleted ? <CheckCircle2 className="w-5 h-5" /> : <Search className="w-5 h-5" />}
+              </div>
+              <div className="flex-1">
+                <h3 className={`text-lg font-semibold ${!isCompleted ? 'text-slate-500' : 'text-slate-800'}`}>4. Compile JSON & Display</h3>
+                {isCompleted && (
+                  <p className="text-sm text-green-600 flex items-center gap-1.5 mt-0.5 font-medium">Ready for visualization</p>
                 )}
               </div>
             </motion.div>

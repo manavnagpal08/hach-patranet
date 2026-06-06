@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { FileText, Search, CheckCircle2, AlertCircle, Loader2, PlayCircle } from 'lucide-react';
+import { FileText, CheckCircle2, AlertCircle, Loader2, PlayCircle } from 'lucide-react';
 import { api, type Document } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 
@@ -120,6 +120,19 @@ export const Dashboard: React.FC = () => {
                   </span>
                   {doc.status === 'Completed' && (
                     <PlayCircle className="w-5 h-5 text-indigo-400 group-hover:text-indigo-600 transition-colors" />
+                  )}
+                  {doc.status === 'Error' && (
+                    <button 
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        await api.retryDocument(doc.id);
+                        api.getDocuments().then(setDocuments);
+                        navigate('/processing');
+                      }} 
+                      className="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
+                    >
+                      Retry
+                    </button>
                   )}
                 </div>
               </motion.div>

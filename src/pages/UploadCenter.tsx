@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { UploadCloud, File, X, CheckCircle2, AlertCircle, FileText, FileImage } from 'lucide-react';
+import { UploadCloud, X, CheckCircle2, AlertCircle, FileText, FileImage } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { api } from '../services/api';
@@ -56,17 +56,27 @@ export const UploadCenter: React.FC = () => {
   const navigate = useNavigate();
 
   const startUpload = async () => {
-    for (const f of files) {
-      if (f.status === 'pending') {
-        setFiles(prev => prev.map(item => item.id === f.id ? { ...item, status: 'uploading', progress: 50 } : item));
-        try {
-          const res = await api.uploadFile(f.file);
-          setFiles(prev => prev.map(item => item.id === f.id ? { ...item, status: 'completed', progress: 100, backendId: res.id } : item));
-          navigate('/processing');
-        } catch (e) {
-          setFiles(prev => prev.map(item => item.id === f.id ? { ...item, status: 'error', progress: 0 } : item));
-        }
+    const pendingFiles = files.filter(f => f.status === 'pending');
+    if (pendingFiles.length === 0) return;
+
+    let successCount = 0;
+
+    for (const f of pendingFiles) {
+      setFiles(prev => prev.map(item => item.id === f.id ? { ...item, status: 'uploading', progress: 50 } : item));
+      try {
+        const res = await api.uploadFile(f.file);
+        setFiles(prev => prev.map(item => item.id === f.id ? { ...item, status: 'completed', progress: 100, backendId: res.id } : item));
+        successCount++;
+      } catch (e) {
+        setFiles(prev => prev.map(item => item.id === f.id ? { ...item, status: 'error', progress: 0 } : item));
       }
+    }
+
+    // After all files are uploaded...
+    if (successCount === 1 && pendingFiles.length === 1) {
+      navigate('/processing');
+    } else if (successCount > 0) {
+      navigate('/history');
     }
   };
 

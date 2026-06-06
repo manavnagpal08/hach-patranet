@@ -1,12 +1,13 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, UploadCloud, Cpu, LayoutList, Search, Settings, Hexagon, FileText, FileJson } from 'lucide-react';
+import { LayoutDashboard, UploadCloud, Cpu, LayoutList, Search, Settings, Hexagon, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const navItems = [
   { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-  { label: 'Upload', path: '/upload', icon: UploadCloud },
-  { label: 'History', path: '/history', icon: FileText },
+  { label: 'Analytics', path: '/analytics', icon: Cpu },
+  { label: 'New Extraction', path: '/upload', icon: UploadCloud },
+  { label: 'Document Library', path: '/history', icon: FileText },
   { label: 'Processing', path: '/processing', icon: Cpu },
   { label: 'Results', path: '/results', icon: LayoutList },
   { label: 'Search', path: '/search', icon: Search },
@@ -22,7 +23,7 @@ const containerVariants = {
   }
 };
 
-const itemVariants = {
+const itemVariants: any = {
   hidden: { opacity: 0, x: -20 },
   show: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
 };
