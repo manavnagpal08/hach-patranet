@@ -69,11 +69,11 @@ export const AnalyticsCenter: React.FC = () => {
   });
 
   const avgMs = validTimeDocs > 0 ? totalTimeMs / validTimeDocs : 0;
-  const avgTimeSec = avgMs >= 1000
-    ? (avgMs / 1000).toFixed(1) + 's'
-    : avgMs > 0
-      ? Math.round(avgMs) + 'ms'
-      : 'N/A';
+  const avgTimeSec = validTimeDocs === 0
+    ? 'N/A'
+    : avgMs >= 1000
+      ? (avgMs / 1000).toFixed(1) + 's'
+      : Math.round(avgMs) + 'ms';
 
   // Error count
   const errorDocs = documents.filter(d => d.status === 'Error').length;
