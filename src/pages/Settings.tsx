@@ -100,7 +100,6 @@ export const Settings: React.FC = () => {
                   <label className="block text-sm font-semibold text-slate-700 mb-3">Active Processing Engine</label>
                   <div className="flex bg-slate-100 p-1 rounded-xl">
                     <button onClick={() => setActiveEngine('local')} className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${activeEngine === 'local' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Local Llama</button>
-                    <button onClick={() => setActiveEngine('qwen')} className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${activeEngine === 'qwen' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Local Qwen</button>
                     <button onClick={() => setActiveEngine('groq')} className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${activeEngine === 'groq' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Groq Cloud</button>
                     <button onClick={() => setActiveEngine('gemini')} className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${activeEngine === 'gemini' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Gemini API</button>
                   </div>

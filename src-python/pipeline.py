@@ -265,21 +265,15 @@ Return ONLY valid JSON.
             # --- LOCAL OFFLINE PIPELINE ---
             
             # STEP 2: AI Structuring
-            model_name = "Qwen 2.5 0.5B" if active_engine == 'qwen' else "Llama 3.2 1B"
-            doc.status = f"Loading {model_name} Model..."
+            doc.status = "Loading Llama 3.2 1B Model..."
             db.commit()
             
-            if active_engine == 'qwen':
-                model_manager.set_local_model('qwen')
-            else:
-                model_manager.set_local_model('local')
-                
             llm = model_manager.load_llm()
             
-            doc.status = f"Analyzing with {model_name}..."
+            doc.status = "Analyzing with Llama AI..."
             db.commit()
             if llm:
-                print(f"Running {model_name} for JSON structuring...")
+                print("Running Llama 3.2 1B for JSON structuring...")
                 prompt = f"""<|begin_of_text|><|start_header_id|>system<|end_header_id|>
 You are an advanced data extraction AI.
 Read the OCR text provided and extract all important details into a JSON object, including tables.

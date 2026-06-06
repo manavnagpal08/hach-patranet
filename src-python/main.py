@@ -259,11 +259,6 @@ Question: {req.message}
             return {"response": f"Groq API Error: {str(e)}"}
 
     # Fallback to local LLM
-    if x_active_engine == 'qwen':
-        model_manager.set_local_model('qwen')
-    else:
-        model_manager.set_local_model('local')
-        
     llm = model_manager.load_llm()
     if not llm:
         return {"response": "Error: Local AI engine offline or model not found."}
@@ -319,11 +314,6 @@ Return ONLY the raw valid translated JSON without markdown formatting.
             return {"error": f"Translation failed: {str(e)}"}
 
     # Fallback to local LLM
-    if x_active_engine == 'qwen':
-        model_manager.set_local_model('qwen')
-    else:
-        model_manager.set_local_model('local')
-        
     llm = model_manager.load_llm()
     if not llm:
         return {"error": "Local AI offline"}
