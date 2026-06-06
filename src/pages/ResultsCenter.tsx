@@ -7,7 +7,7 @@ import { useLocation } from 'react-router-dom';
 
 const ChatInterface: React.FC<{ documentId: number }> = ({ documentId }) => {
   const [messages, setMessages] = useState<{role: 'ai'|'user', text: string}[]>([
-    { role: 'ai', text: "Hi! I'm your AI assistant. I'll use Gemini if you provided an API key, otherwise I'll use the local Llama 3.2 engine." }
+    { role: 'ai', text: "Hello, I am an AI assistant. How can I help you regarding the document?" }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -28,8 +28,8 @@ const ChatInterface: React.FC<{ documentId: number }> = ({ documentId }) => {
   };
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex-1 border border-slate-100 rounded-2xl bg-slate-50 p-4 mb-4 overflow-y-auto space-y-4">
+    <div className="h-full flex flex-col min-h-0">
+      <div className="flex-1 border border-slate-100 rounded-2xl bg-slate-50 p-4 mb-4 overflow-y-auto space-y-4 min-h-0">
         {messages.map((msg, i) => (
           <div key={i} className={`flex items-start gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
             <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-indigo-100 text-indigo-600' : 'bg-cyan-100 text-cyan-600'}`}>
@@ -394,7 +394,7 @@ export const ResultsCenter: React.FC = () => {
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
               </button>
             </div>
-            <div className="flex-1 p-4 bg-slate-50/50">
+            <div className="flex-1 p-4 bg-slate-50/50 min-h-0">
               <ChatInterface documentId={document.id} />
             </div>
           </motion.div>

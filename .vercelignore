@@ -1,0 +1,7 @@
+src-python/
+.venv/
+__pycache__/
+*.gguf
+*.bin
+models/
+docs/
