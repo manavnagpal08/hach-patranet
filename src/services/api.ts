@@ -115,5 +115,13 @@ export const api = {
       headers: getHeaders()
     });
     if (!response.ok) throw new Error('Failed to retry document');
+  },
+
+  async deleteDocument(documentId: number): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/documents/${documentId}`, {
+      method: 'DELETE',
+      headers: getHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to delete document');
   }
 };

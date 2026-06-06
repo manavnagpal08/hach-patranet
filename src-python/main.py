@@ -202,6 +202,31 @@ def retry_document(doc_id: int, background_tasks: BackgroundTasks, x_gemini_api_
     db.close()
     return {"message": "Retry initiated"}
 
+@app.delete("/api/documents/{doc_id}")
+def delete_document(doc_id: int):
+    db = SessionLocal()
+    doc = db.query(Document).filter(Document.id == doc_id).first()
+    if not doc:
+        db.close()
+        return {"error": "Not found"}
+    
+    # Delete the uploaded file from disk
+    try:
+        if doc.filepath and os.path.exists(doc.filepath):
+            os.remove(doc.filepath)
+    except Exception as e:
+        print(f"Could not delete file: {e}")
+    
+    # Delete extraction results
+    result = db.query(ExtractionResult).filter(ExtractionResult.document_id == doc_id).first()
+    if result:
+        db.delete(result)
+    
+    db.delete(doc)
+    db.commit()
+    db.close()
+    return {"message": "Document deleted"}
+
 from pydantic import BaseModel
 
 class ChatRequest(BaseModel):
