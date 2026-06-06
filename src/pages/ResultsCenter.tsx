@@ -224,7 +224,7 @@ export const ResultsCenter: React.FC = () => {
         </button>
       </div>
 
-      <div className={`flex-1 flex gap-6 relative ${splitView ? 'flex-row' : 'flex-col'}`}>
+      <div className="flex-1 flex gap-6 relative flex-row overflow-hidden">
         {splitView && (
           <motion.div 
             initial={{ opacity: 0, width: 0 }}
