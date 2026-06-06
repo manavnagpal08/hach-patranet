@@ -53,7 +53,7 @@ export const AnalyticsCenter: React.FC = () => {
   const successDocs = documents.filter(d => d.status === 'Completed');
   const successRate = documents.length ? Math.round((successDocs.length / documents.length) * 100) : 0;
   
-  // Calculate Average Processing Time
+  // Calculate Average Processing Time (allow >= 0 diffs, use all completed docs)
   let totalTimeMs = 0;
   let validTimeDocs = 0;
   successDocs.forEach(doc => {
@@ -61,17 +61,22 @@ export const AnalyticsCenter: React.FC = () => {
       const created = new Date(doc.created_at).getTime();
       const completed = new Date(doc.completed_at).getTime();
       const diff = completed - created;
-      if (diff > 0 && diff < 300000) { // sanity check < 5 mins
+      if (diff >= 0 && diff < 600000) { // sanity check < 10 mins
         totalTimeMs += diff;
         validTimeDocs++;
       }
     }
   });
-  
-  const avgTimeSec = validTimeDocs > 0 ? (totalTimeMs / validTimeDocs / 1000).toFixed(1) : '0';
-  
-  // Estimate Cloud Savings ($0.05 per doc on Enterprise APIs)
-  const savings = (documents.length * 0.05).toFixed(2);
+
+  const avgMs = validTimeDocs > 0 ? totalTimeMs / validTimeDocs : 0;
+  const avgTimeSec = avgMs >= 1000
+    ? (avgMs / 1000).toFixed(1) + 's'
+    : avgMs > 0
+      ? Math.round(avgMs) + 'ms'
+      : 'N/A';
+
+  // Error count
+  const errorDocs = documents.filter(d => d.status === 'Error').length;
 
   return (
     <div className="space-y-8 pb-8 relative z-10">
@@ -89,18 +94,18 @@ export const AnalyticsCenter: React.FC = () => {
         </div>
         <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 border border-slate-200/50 shadow-sm relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <p className="text-sm font-medium text-slate-500 mb-1 relative z-10">Avg Speed (sec)</p>
-          <h3 className="text-3xl font-bold text-slate-800 relative z-10">{avgTimeSec}s</h3>
+          <p className="text-sm font-medium text-slate-500 mb-1 relative z-10">Avg Speed</p>
+          <h3 className="text-3xl font-bold text-slate-800 relative z-10">{avgTimeSec}</h3>
           <CheckCircle2 className="w-8 h-8 text-emerald-500 absolute bottom-6 right-6 opacity-20 transform group-hover:scale-110 transition-transform" />
         </div>
         <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 border border-slate-200/50 shadow-sm relative overflow-hidden group">
-           <div className="absolute inset-0 bg-gradient-to-br from-cyan-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <p className="text-sm font-medium text-slate-500 mb-1 relative z-10">API Savings</p>
-          <h3 className="text-3xl font-bold text-slate-800 relative z-10">${savings}</h3>
-          <Languages className="w-8 h-8 text-cyan-500 absolute bottom-6 right-6 opacity-20 transform group-hover:scale-110 transition-transform" />
+          <div className="absolute inset-0 bg-gradient-to-br from-rose-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <p className="text-sm font-medium text-slate-500 mb-1 relative z-10">Errors</p>
+          <h3 className="text-3xl font-bold text-slate-800 relative z-10">{errorDocs}</h3>
+          <Languages className="w-8 h-8 text-rose-400 absolute bottom-6 right-6 opacity-20 transform group-hover:scale-110 transition-transform" />
         </div>
         <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 border border-slate-200/50 shadow-sm relative overflow-hidden group">
-           <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
           <p className="text-sm font-medium text-slate-500 mb-1 relative z-10">Success Rate</p>
           <h3 className="text-3xl font-bold text-slate-800 relative z-10">{successRate}%</h3>
           <FileText className="w-8 h-8 text-purple-500 absolute bottom-6 right-6 opacity-20 transform group-hover:scale-110 transition-transform" />
